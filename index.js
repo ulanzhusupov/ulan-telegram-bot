@@ -4,7 +4,7 @@ const kb = require('./keyboard_buttons');
 const keyboard = require('./keyboard');
 
 const TelegramBot = require('node-telegram-bot-api');
-let token = '1029442842:AAEye11IwuHyYVarnHBXc2Y54NzbUdZ5qys';
+let token = '';
 
 let bot = new TelegramBot(token, {polling: true});
 
