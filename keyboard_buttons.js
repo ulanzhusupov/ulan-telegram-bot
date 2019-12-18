@@ -1,5 +1,5 @@
 module.exports = {
   home: {
-    convert: 'Youtube video converter'
+    getQuote: 'Рандомная фраза'
   }
 }

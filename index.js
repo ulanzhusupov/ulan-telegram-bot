@@ -16,52 +16,52 @@ let options = {
 };
 
 let phrase = {
-  content: 'Not exists',
-  author: 'None'
+  quoteText: 'Quote isn\'t here!',
+  quoteAuthor: 'None'
 };
 
-const convertVideo = () => {
-  
-  axios('https://api.quotable.io/random')
+const getQuote = () => {
+  axios('https://api.forismatic.com/api/1.0/?method=getQuote&lang=ru&format=json&json=?')
     .then((res)=>{
-      console.log(res.data);
-      phrase.content = res.data.content;
-      phrase.author = res.data.author;
+      phrase.quoteText = res.data.quoteText;
+      phrase.quoteAuthor = res.data.quoteAuthor;
     })
     .catch((error)=>{
       console.log('Error***********', error)
     });
 }
+getQuote();
 
-bot.on('message', (msg, match) => {
-  bot.sendMessage(helper.getChatId(msg), 'Введите адрес видео из youtube:');
-  convertVideo();
+// bot.on('message', (msg, match) => {
+//   bot.sendMessage(helper.getChatId(msg), 'Введите адрес видео из youtube:');
+//   convertVideo();
 
-  switch(msg.text[0]) {
-    case 'H': {
-      bot.sendMessage(helper.getChatId(msg), `"${phrase.content}" ${phrase.author}`);
-    }
-    default:
-      break;
-  }
-})
+//   switch(msg.text[0]) {
+//     case 'H': {
+//       bot.sendMessage(helper.getChatId(msg), `"${phrase.content}" ${phrase.author}`);
+//     }
+//     default:
+//       break;
+//   }
+// })
     
 // bot.on('new_chat_members', (msg, match) => {
 //   bot.sendMessage(msg.chat.id, 'Выберите любую кнопку:', options)
 // });
 
-// bot.onText(/\/start/, function (msg, match) {
-//   const startText = `Привет, ${msg.from.first_name}!\nВыберите действие:`;
+bot.onText(/\/start/, function (msg, match) {
+  const startText = `Привет, ${msg.from.first_name}!\nВыберите действие:`;
 
-//   bot.sendMessage(helper.getChatId(msg), startText, options);
-// });
+  bot.sendMessage(helper.getChatId(msg), startText, options);
+});
 
-// bot.on('message', msg => {
-//   switch(msg.text) {
-//     case kb.home.convert: {
-//       bot.sendMessage(helper.getChatId(msg), 'Введите адрес видео из youtube:');
-//     }
-//     default:
-//       bot.sendMessage(helper.getChatId(msg), 'Выберите действие:', options);
-//   }
-// });
+bot.on('message', msg => {
+  switch(msg.text) {
+    case kb.home.getQuote: {
+      getQuote();
+      bot.sendMessage(helper.getChatId(msg), `"${phrase.quoteText}" ${phrase.quoteAuthor}`);
+    }
+    default:
+      break;
+  }
+});
