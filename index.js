@@ -26,7 +26,7 @@ let joke = '';
  * Gets random quotes from forismatic.com
  */
 const getQuote = () => {
-  axios('https://api.forismatic.com/api/1.0/?method=getQuote&lang=ru&format=jsonp&json=?')
+  axios('https://api.forismatic.com/api/1.0/?method=getQuote&lang=ru&format=json&json=?')
     .then((res)=>{
       phrase.quoteText = res.data.quoteText;
       phrase.quoteAuthor = res.data.quoteAuthor;
@@ -36,7 +36,6 @@ const getQuote = () => {
     });
 }
 getQuote();
-
 /**
  * Gets top 10 music from Deezer
 */
@@ -53,7 +52,6 @@ const getTopMusic = () => {
   });
 }
 getTopMusic();
-
 /**
  * Get Chuck Norris random jokes from icndb.com/jokes/random/3
 */
@@ -63,14 +61,13 @@ const getRandomJoke = () => {
     url: 'http://api.icndb.com/jokes/random/',
   })
   .then(res => {
-    joke = res.data.joke;
+    joke = res.data.value.joke;
   })
   .catch(err => {
     console.log("Error++++", err)
   });
 }
 getRandomJoke();
-
 /**
  * On user started this bot
 */
@@ -84,31 +81,31 @@ bot.onText(/\/start/, function (msg, match) {
  * On user messaging ant text
  */
 bot.on('message', msg => {
+  const msgTxt = msg.text;
 
-  switch(msg.text) {
-    case kb.home.getQuote: {
-      getQuote();
-      bot.sendMessage(helper.getChatId(msg), `"${phrase.quoteText}" ${phrase.quoteAuthor}`);
-    }
-    case kb.home.getTopMusics: {
-      let text = '';
-
-      if(topMusics) {
-        topMusics.map((item, index) => {
-          let time = parseFloat(item.duration).toFixed(3);
-          let minutes = Math.floor(time/60)%60;
-          let seconds = Math.floor(time - minutes * 60);
-          
-          text += `0${index+1}. ${item.title}\nИсполнитель: ${item.artist.name}\nМесто: ${item.position}\nСсылка на трек: ${item.link}\n\n`;
-        })
-      }
-      bot.sendMessage(helper.getChatId(msg), `Список топ 10 хитов:\n\n${text}`, options);
-    }
-    case kb.home.getRandomJoke: {
-      getRandomJoke();
-      bot.sendMessage(helper.getChatId(msg), `${joke}`, options)
-    }
-    default:
-      break;
+  if(msgTxt === kb.home.getQuote) {
+    getQuote();
+    bot.sendMessage(helper.getChatId(msg), `"${phrase.quoteText}" ${phrase.quoteAuthor}`);
   }
+  else if(msgTxt === kb.home.getTopMusics) {
+    getTopMusic();
+    let text = '';
+    if(topMusics) {
+      topMusics.map((item, index) => {
+        let time = parseFloat(item.duration).toFixed(3);
+        let minutes = Math.floor(time/60)%60;
+        let seconds = Math.floor(time - minutes * 60);
+        
+        text += `0${index+1}. ${item.title}\nИсполнитель: ${item.artist.name}\nМесто: ${item.position}\nСсылка на трек: ${item.link}\n\n`;
+      })
+    }
+    bot.sendMessage(helper.getChatId(msg), `Список топ 10 хитов:\n\n${text}`, options);
+  }
+  else if(msgTxt === kb.home.getRandomJoke) {
+    getRandomJoke();
+    bot.sendMessage(helper.getChatId(msg), `${joke}`, options)
+  }
+  else 
+    return
+  
 });
