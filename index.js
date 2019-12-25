@@ -19,11 +19,14 @@ let phrase = {
   quoteText: 'Quote isn\'t here!',
   quoteAuthor: 'None'
 };
-
 let topMusics = [];
+let joke = '';
 
+/**
+ * Gets random quotes from forismatic.com
+ */
 const getQuote = () => {
-  axios('https://api.forismatic.com/api/1.0/?method=getQuote&lang=ru&format=json&json=?')
+  axios('https://api.forismatic.com/api/1.0/?method=getQuote&lang=ru&format=jsonp&json=?')
     .then((res)=>{
       phrase.quoteText = res.data.quoteText;
       phrase.quoteAuthor = res.data.quoteAuthor;
@@ -34,6 +37,9 @@ const getQuote = () => {
 }
 getQuote();
 
+/**
+ * Gets top 10 music from Deezer
+*/
 const getTopMusic = () => {
   axios({
     method: 'get',
@@ -48,67 +54,59 @@ const getTopMusic = () => {
 }
 getTopMusic();
 
+/**
+ * Get Chuck Norris random jokes from icndb.com/jokes/random/3
+*/
+const getRandomJoke = () => {
+  axios({
+    method: 'get',
+    url: 'http://api.icndb.com/jokes/random/',
+  })
+  .then(res => {
+    joke = res.data.joke;
+  })
+  .catch(err => {
+    console.log("Error++++", err)
+  });
+}
+getRandomJoke();
+
+/**
+ * On user started this bot
+*/
 bot.onText(/\/start/, function (msg, match) {
   const startText = `Привет, ${msg.from.first_name}!\nВыберите действие:`;
 
   bot.sendMessage(helper.getChatId(msg), startText, options);
 });
 
+/**
+ * On user messaging ant text
+ */
 bot.on('message', msg => {
-  const charts = [];
-  const message = msg.text;
 
-  switch(message) {
+  switch(msg.text) {
     case kb.home.getQuote: {
       getQuote();
       bot.sendMessage(helper.getChatId(msg), `"${phrase.quoteText}" ${phrase.quoteAuthor}`);
     }
-
     case kb.home.getTopMusics: {
-      const pad = function(num, size) { return ('000' + num).slice(size * -1); };
-
-      let topMusicKeyboard = {
-        reply_markup: {
-          keyboard: []
-        }
-      }
+      let text = '';
 
       if(topMusics) {
         topMusics.map((item, index) => {
           let time = parseFloat(item.duration).toFixed(3);
           let minutes = Math.floor(time/60)%60;
           let seconds = Math.floor(time - minutes * 60);
-          let text = '';
-
-          text += `0${index+1}. ${item.title}\n${item.album.cover_medium}\nИсполнитель: ${item.artist.name}\nПродолжительность: ${pad(minutes, 2)} : ${pad(seconds, 2)}\nМесто: ${item.position}\nПревью: ${item.preview}\nСсылка на трек: ${item.link}\n\n`;
-          topMusicKeyboard.reply_markup.keyboard.push([`0${index+1}.${item.title}`]);
-          charts.push(text);
+          
+          text += `0${index+1}. ${item.title}\nИсполнитель: ${item.artist.name}\nМесто: ${item.position}\nСсылка на трек: ${item.link}\n\n`;
         })
       }
-
-      if(topMusicKeyboard.reply_markup.keyboard) {
-        bot.sendMessage(helper.getChatId(msg), `Выберите интересный хит:`, topMusicKeyboard);
-      } else {
-        bot.sendMessage(helper.getChatId(msg), `Произошла ошибка при загрузке хитов. Сожалею!`);
-      }
+      bot.sendMessage(helper.getChatId(msg), `Список топ 10 хитов:\n\n${text}`, options);
     }
-    default:
-      break;
-  }
-
-  switch(message[0]) {
-    case '0': {
-      let str = msg.text.slice(3);
-      if(charts) {
-        topMusics.map((item, index) => {
-          if(item.title == str) {
-            bot.sendMessage(helper.getChatId(msg), charts[index]);
-          }
-
-        })
-      }
-
-
+    case kb.home.getRandomJoke: {
+      getRandomJoke();
+      bot.sendMessage(helper.getChatId(msg), `${joke}`, options)
     }
     default:
       break;
