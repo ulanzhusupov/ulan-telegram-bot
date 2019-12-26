@@ -1,0 +1,6 @@
+{
+  "name": "Telegram bot",
+  "description": "Random quotes and jokes",
+  "repository": "https://github.com/ulanzhusupov/ulan-telegram-bot",
+  "keywords": ["telegramm", "bot", "quotes", "jokes"]
+}

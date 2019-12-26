@@ -25,21 +25,21 @@ let joke = '';
 /**
  * Gets random quotes from forismatic.com
  */
-const getQuote = () => {
+const getQuote = (id) => {
   axios('https://api.forismatic.com/api/1.0/?method=getQuote&lang=ru&format=json&json=?')
     .then((res)=>{
       phrase.quoteText = res.data.quoteText;
       phrase.quoteAuthor = res.data.quoteAuthor;
     })
-    .catch((error)=>{
-      console.log('Error***********', error)
+    .catch((err)=>{
+      bot.sendMessage(id, err);
     });
 }
 getQuote();
 /**
  * Gets top 10 music from Deezer
 */
-const getTopMusic = () => {
+const getTopMusic = (id) => {
   axios({
     method: 'get',
     url: 'https://api.deezer.com/chart/0/tracks',
@@ -48,14 +48,14 @@ const getTopMusic = () => {
     topMusics = res.data.data;
   })
   .catch(err => {
-    console.log("Error++++", err)
+    bot.sendMessage(id, err);
   });
 }
 getTopMusic();
 /**
  * Get Chuck Norris random jokes from icndb.com/jokes/random/3
 */
-const getRandomJoke = () => {
+const getRandomJoke = (id) => {
   axios({
     method: 'get',
     url: 'http://api.icndb.com/jokes/random/',
@@ -64,7 +64,7 @@ const getRandomJoke = () => {
     joke = res.data.value.joke;
   })
   .catch(err => {
-    console.log("Error++++", err)
+    bot.sendMessage(id, err);
   });
 }
 getRandomJoke();
@@ -82,27 +82,25 @@ bot.onText(/\/start/, function (msg, match) {
  */
 bot.on('message', msg => {
   const msgTxt = msg.text;
+  const id = msg.chat.id;
 
   if(msgTxt === kb.home.getQuote) {
-    getQuote();
+    getQuote(id);
     bot.sendMessage(helper.getChatId(msg), `"${phrase.quoteText}" ${phrase.quoteAuthor}`);
   }
   else if(msgTxt === kb.home.getTopMusics) {
-    getTopMusic();
+    getTopMusic(id);
     let text = '';
     if(topMusics) {
-      topMusics.map((item, index) => {
-        let time = parseFloat(item.duration).toFixed(3);
-        let minutes = Math.floor(time/60)%60;
-        let seconds = Math.floor(time - minutes * 60);
+      topMusics.map((item) => {
         
-        text += `0${index+1}. ${item.title}\nИсполнитель: ${item.artist.name}\nМесто: ${item.position}\nСсылка на трек: ${item.link}\n\n`;
+        text += `Место: ${item.position}\n${item.title}\nИсполнитель: ${item.artist.name}\nСсылка на трек: ${item.link}\n\n`;
       })
     }
     bot.sendMessage(helper.getChatId(msg), `Список топ 10 хитов:\n\n${text}`, options);
   }
   else if(msgTxt === kb.home.getRandomJoke) {
-    getRandomJoke();
+    getRandomJoke(id);
     bot.sendMessage(helper.getChatId(msg), `${joke}`, options)
   }
   else 
